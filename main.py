@@ -13,16 +13,36 @@ st.markdown(
     '<p style="color: gray; font-size: 12px;">Use filters below. Visuals reflect filtered data. Data table is hidden.</p>',
     unsafe_allow_html=True
 )
+# Upload file from UI
+uploaded_file = st.file_uploader("Upload your file", type=["csv", "xlsx"])
 
-# Load data
 @st.cache_data
-def load_data():
-    return pd.read_csv('data.csv')
+def load_data(file, file_type):
+    if file_type == "csv":
+        return pd.read_csv(file)
+    elif file_type == "xlsx":
+        return pd.read_excel(file)
 
-df = load_data()
+# Use uploaded file or fallback to default
+if uploaded_file is not None:
+    file_type = uploaded_file.name.split(".")[-1].lower()
+    df = load_data(uploaded_file, file_type)
+else:
+    st.info("No file uploaded. Using default data.csv")
+    df = pd.read_csv("data.csv")
+
+# Convert date column
 df['OrderDate'] = pd.to_datetime(df['OrderDate'], errors='coerce')
 
-# 🌟 Hidden filter section (table not shown)
+# # Load data
+# @st.cache_data
+# def load_data():
+#     return pd.read_csv('data.csv')
+
+# df = load_data()
+# df['OrderDate'] = pd.to_datetime(df['OrderDate'], errors='coerce')
+
+# Hidden filter section (table not shown)
 filtered_df = dataframe_explorer(df, case=False)
 
 # Stop if empty
